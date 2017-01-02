@@ -5,9 +5,12 @@ import { ChartModule } from 'angular2-highcharts';
 import { AppComponent } from './app.component';
 import { GithubService } from './github/shared/github.service';
 import { CourbePSService } from './home/courbePS.service';
+import { OpenDataRteService } from './about/openDataRte.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
+
+import { Courbe } from './home/courbe';
 
 import { AboutComponent } from './about/about.component';
 import { HomeComponent } from './home/home.component';
@@ -37,7 +40,8 @@ import { ContactComponent } from './contact/contact.component';
   ],
   providers: [
     GithubService,
-    CourbePSService
+    CourbePSService,
+    OpenDataRteService
   ],
   bootstrap: [ AppComponent ]
 })

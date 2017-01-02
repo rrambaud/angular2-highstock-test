@@ -1,13 +1,34 @@
 import {Component} from '@angular/core';
 import { CourbePSService } from './courbePS.service';
 
+import { Courbe } from './courbe';
+
 import * as Highcharts from 'highcharts';
+import * as moment from 'moment';
 
 Highcharts.setOptions({
     global : {
         useUTC : false
+    },
+    plotOptions: {
+        series: {
+            animation: false
+        }
     }
 });
+
+export const OPTIONS_XAXIS: Object = {
+    type: 'datetime',
+    dateTimeLabelFormats: {
+        second: '%Y-%m-%d<br/>%H:%M:%S',
+        minute: '%Y-%m-%d<br/>%H:%M',
+        hour: '%Y-%m-%d<br/>%H:%M',
+        day: '%Y<br/>%m-%d',
+        week: '%Y<br/>%m-%d',
+        month: '%Y-%m',
+        year: '%Y'
+    }
+};
 
 @Component({
     selector: 'home',
@@ -16,33 +37,40 @@ Highcharts.setOptions({
 })
 export class HomeComponent {
     options: Object;
+    courbe: Courbe;
 
-    constructor(public courbePSService: CourbePSService) {
-        courbePSService.getCourbePS().subscribe(points => {
-            /*let points :Array<Array<Number>> = [];
-            for (let point of pointsRaw) {
-            points.push([point[0], point[1]]);
-        }*/
-        console.log(points);
-        this.options = {
-            title : { text : 'simple chart' },
-            xAxis: {
-                type: 'datetime',
-                dateTimeLabelFormats: {
-                    second: '%Y-%m-%d<br/>%H:%M:%S',
-                    minute: '%Y-%m-%d<br/>%H:%M',
-                    hour: '%Y-%m-%d<br/>%H:%M',
-                    day: '%Y<br/>%m-%d',
-                    week: '%Y<br/>%m-%d',
-                    month: '%Y-%m',
-                    year: '%Y'
-                }
-            },
-            series: [{
-                data: points
-            }]
+
+    constructor(private courbePSService: CourbePSService) {
+        let date = new Date();
+
+        this.courbe = {
+            dateDebut: moment(date).startOf('month').toDate(),
+            dateFin: moment(date).startOf('month').add({months:1}).subtract({seconds:1}).toDate(),
+            ps:new Map<string, number>().set('PTE', 100).set('HPH', 120).set('HCH', 140).set('HPE', 160).set('HCE', 100),
+            points: undefined
         };
-    });
-}
+
+        courbePSService.getCourbePS(this.courbe).subscribe(courbe => {
+            this.courbe = courbe;
+            this.options = {
+                xAxis: OPTIONS_XAXIS,
+                series: [{
+                    data: courbe.points
+                }]
+            };
+        });
+    }
+
+    public etendCourbe(valeurDuree: number, typeDuree : string) : void {
+        this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.courbe).subscribe(courbe => {
+            this.courbe = courbe;
+            this.options = {
+                xAxis: OPTIONS_XAXIS,
+                series: [{
+                    data: courbe.points
+                }]
+            };
+        });
+    }
 
 }

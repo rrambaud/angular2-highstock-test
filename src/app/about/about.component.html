@@ -1,2 +1,13 @@
 <h3>About Component</h3>
 <p>This is the about component!</p>
+
+<chart [options]="options"></chart>
+
+
+<ul>
+    <li *ngFor="let dataset of dataSetCatalog">
+        <h1>{{dataset.title}}</h1>
+        <div [innerHTML]="dataset.description"></div>
+        <button (click)="getRecords(dataset)">Search Orgs</button>
+    </li>
+</ul>
