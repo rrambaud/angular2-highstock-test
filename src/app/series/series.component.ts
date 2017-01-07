@@ -44,7 +44,10 @@ Highcharts.setOptions({
 
 export const OPTIONS_XAXIS: Object = {
     type: 'datetime',
+<<<<<<< HEAD
     tickInterval : 1000 * 60 * 10,
+=======
+>>>>>>> 37000ae... working with Highstock
     ordinal: false,
     dateTimeLabelFormats: {
         second: '%Y-%m-%d<br/>%H:%M:%S',
@@ -65,9 +68,14 @@ export const OPTIONS_XAXIS: Object = {
 export class SeriesComponent {
     options: Object;
     courbe: Courbe;
+<<<<<<< HEAD
     chart : any;
     errorCount : number = 0;
     afficherCourbe: boolean = true;
+=======
+    errorCount : number = 0;
+
+>>>>>>> 37000ae... working with Highstock
 
     constructor(private courbePSService: CourbePSService) {
         let date = new Date();
@@ -81,22 +89,37 @@ export class SeriesComponent {
 
         courbePSService.getCourbePS(this.courbe).subscribe(courbe => {
             this.courbe = courbe;
+<<<<<<< HEAD
             this.options= this.buildOptions(courbe.points);
             /*this.options = {
+=======
+            this.options = {
+>>>>>>> 37000ae... working with Highstock
                 xAxis: OPTIONS_XAXIS,
                 rangeSelector : {
                     "enabled" : false
                 },
+<<<<<<< HEAD
                 zoomType : "x",
+=======
+                credits : {
+                    "enabled" : false
+                },
+>>>>>>> 37000ae... working with Highstock
                 type: 'line',
                 series: [{
                     data: courbe.points
                 }]
+<<<<<<< HEAD
             };*/
+=======
+            };
+>>>>>>> 37000ae... working with Highstock
         },
         err=> {this.errorCount++;console.log(this.errorCount);});
     }
 
+<<<<<<< HEAD
     saveInstance(chartInstance) {
         this.chart = chartInstance;
     }
@@ -330,6 +353,8 @@ export class SeriesComponent {
         };
     }
 
+=======
+>>>>>>> 37000ae... working with Highstock
     public etendCourbe(valeurDuree: number, typeDuree : string) : void {
         this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.courbe).subscribe(courbe => {
             this.courbe = courbe;

@@ -4,16 +4,17 @@ import { rootRouterConfig } from './app.routes';
 import { ChartModule } from 'angular2-highcharts';
 import { AppComponent } from './app.component';
 import { GithubService } from './github/shared/github.service';
-import { CourbePSService } from './home/courbePS.service';
+import { CourbePSService } from './series/courbePS.service';
 import { OpenDataRteService } from './about/openDataRte.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
 
-import { Courbe } from './home/courbe';
+import { Courbe } from './series/courbe';
 
 import { AboutComponent } from './about/about.component';
 import { HomeComponent } from './home/home.component';
+import { SeriesComponent } from './series/series.component';
 import { RepoBrowserComponent } from './github/repo-browser/repo-browser.component';
 import { RepoListComponent } from './github/repo-list/repo-list.component';
 import { RepoDetailComponent } from './github/repo-detail/repo-detail.component';
@@ -28,6 +29,7 @@ import { ContactComponent } from './contact/contact.component';
     RepoListComponent,
     RepoDetailComponent,
     HomeComponent,
+    SeriesComponent,
     ContactComponent
   ],
   imports: [

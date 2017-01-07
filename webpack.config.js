@@ -55,7 +55,12 @@ var defaultConfig = {
 
   resolve: {
     extensions: [ '.ts', '.js' ],
-    modules: [ path.resolve(__dirname, 'node_modules') ]
+    modules: [ path.resolve(__dirname, 'node_modules') ],
+    alias: {
+      // NOTE: You should set 'highcharts/highcharts.src.js'
+      // if you are not going to use <chart type="StockChart"
+      highcharts$: "highcharts/highstock.src.js"
+    }
   },
 
   devServer: {

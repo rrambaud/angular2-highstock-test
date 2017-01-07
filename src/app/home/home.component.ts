@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
-import { CourbePSService } from './courbePS.service';
+import { CourbePSService } from '../series/courbePS.service';
 
-import { Courbe } from './courbe';
+import { Courbe } from '../series/courbe';
 
 import * as Highcharts from 'highcharts';
 import * as moment from 'moment';
@@ -38,6 +38,7 @@ export const OPTIONS_XAXIS: Object = {
 export class HomeComponent {
     options: Object;
     courbe: Courbe;
+    errorCount : number = 0;
 
 
     constructor(private courbePSService: CourbePSService) {
@@ -58,7 +59,8 @@ export class HomeComponent {
                     data: courbe.points
                 }]
             };
-        });
+        },
+        err=> {this.errorCount++;console.log(this.errorCount);});
     }
 
     public etendCourbe(valeurDuree: number, typeDuree : string) : void {
