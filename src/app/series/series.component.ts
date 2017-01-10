@@ -44,14 +44,7 @@ Highcharts.setOptions({
 
 export const OPTIONS_XAXIS: Object = {
     type: 'datetime',
-<<<<<<< HEAD
-<<<<<<< HEAD
-    tickInterval : 1000 * 60 * 10,
-=======
->>>>>>> 37000ae... working with Highstock
-=======
-    tickInterval : 1000 * 60 * 10,
->>>>>>> bb13bee... show-display plot
+    // tickInterval : 1000 * 60 * 10,
     ordinal: false,
     dateTimeLabelFormats: {
         second: '%Y-%m-%d<br/>%H:%M:%S',
@@ -72,20 +65,9 @@ export const OPTIONS_XAXIS: Object = {
 export class SeriesComponent {
     options: Object;
     courbe: Courbe;
-<<<<<<< HEAD
-<<<<<<< HEAD
     chart : any;
     errorCount : number = 0;
     afficherCourbe: boolean = true;
-=======
-    errorCount : number = 0;
-
->>>>>>> 37000ae... working with Highstock
-=======
-    chart : any;
-    errorCount : number = 0;
-    afficherCourbe: boolean = true;
->>>>>>> bb13bee... show-display plot
 
     constructor(private courbePSService: CourbePSService) {
         let date = new Date();
@@ -99,53 +81,11 @@ export class SeriesComponent {
 
         courbePSService.getCourbePS(this.courbe).subscribe(courbe => {
             this.courbe = courbe;
-<<<<<<< HEAD
-<<<<<<< HEAD
             this.options= this.buildOptions(courbe.points);
-            /*this.options = {
-=======
-            this.options = {
->>>>>>> 37000ae... working with Highstock
-=======
-            this.options= this.buildOptions(courbe.points);
-            /*this.options = {
->>>>>>> bb13bee... show-display plot
-                xAxis: OPTIONS_XAXIS,
-                rangeSelector : {
-                    "enabled" : false
-                },
-<<<<<<< HEAD
-<<<<<<< HEAD
-                zoomType : "x",
-=======
-                credits : {
-                    "enabled" : false
-                },
->>>>>>> 37000ae... working with Highstock
-=======
-                zoomType : "x",
->>>>>>> bb13bee... show-display plot
-                type: 'line',
-                series: [{
-                    data: courbe.points
-                }]
-<<<<<<< HEAD
-<<<<<<< HEAD
-            };*/
-=======
-            };
->>>>>>> 37000ae... working with Highstock
-=======
-            };*/
->>>>>>> bb13bee... show-display plot
         },
         err=> {this.errorCount++;console.log(this.errorCount);});
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> bb13bee... show-display plot
     saveInstance(chartInstance) {
         this.chart = chartInstance;
     }
@@ -379,11 +319,6 @@ export class SeriesComponent {
         };
     }
 
-<<<<<<< HEAD
-=======
->>>>>>> 37000ae... working with Highstock
-=======
->>>>>>> bb13bee... show-display plot
     public etendCourbe(valeurDuree: number, typeDuree : string) : void {
         this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.courbe).subscribe(courbe => {
             this.courbe = courbe;
