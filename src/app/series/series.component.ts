@@ -42,18 +42,32 @@ Highcharts.setOptions({
     }
 });
 
-export const OPTIONS_XAXIS: Object = {
-    type: 'datetime',
-    // tickInterval : 1000 * 60 * 10,
-    ordinal: false,
-    dateTimeLabelFormats: {
-        second: '%Y-%m-%d<br/>%H:%M:%S',
-        minute: '%Y-%m-%d<br/>%H:%M',
-        hour: '%Y-%m-%d<br/>%H:%M',
-        day: '%Y<br/>%m-%d',
-        week: '%Y<br/>%m-%d',
-        month: '%Y-%m',
-        year: '%Y'
+export const PLOT_OPTIONS: Object = {
+    chart : {
+        zoomType : "x",
+        type : "line"
+    },
+    legend : {
+        enabled : true
+    },
+    navigator : {
+        margin : 30,
+    },
+    loading : {
+        hideDuration : 100,
+        showDuration : 100,
+    },
+    //tooltip : {formatter : tooltipService.tooltipFormatter },
+    xAxis : [{
+        endOnTick : true,
+        startOnTick : true,
+        ordinal: false
+    }],
+    rangeSelector : {
+        enabled : false
+    },
+    credits : {
+        enabled : false
     }
 };
 
@@ -79,7 +93,7 @@ export class SeriesComponent {
             points: undefined
         };
 
-        courbePSService.getCourbePS(this.courbe).subscribe(courbe => {
+        courbePSService.getCourbe(this.courbe).subscribe(courbe => {
             this.courbe = courbe;
             this.options= this.buildOptions(courbe.points);
         },
@@ -98,202 +112,29 @@ export class SeriesComponent {
             this.afficherCourbe = !this.afficherCourbe;
     };
 
-    private approximationMinMax(arr, dateArray, date, name) {
-        var ret = null;
-        var maxBinding = {};
-        var len = arr.length;
-        if (len) {
-            var max = -Number.MAX_VALUE;
-            var min = Number.MAX_VALUE;
-            var index = 0;
-            for ( var i = 0; i < arr.length; i++) {
-                if (arr[i] > max) {
-                    max = arr[i];
-                    index = i;
-                }
-                if (arr[i] < min) {
-                    min = arr[i];
-                }
-            }
-            var val1 = max;
-            var UNDEFINED;
-            // Si c'est une PS il ne faut pas appliquer le min / max :
-            // Highstock ne le supporte pas.
-            var groupthem = (max > min) && name[0].indexOf("_PS_") == -1 ? true : false;
-            ret = [val1, min, groupthem];
-
-            if (!maxBinding[name[0]]) {
-                maxBinding[name[0]] = {};
-            }
-            for ( var j = 0; j < dateArray.length; j++) {
-                if (!maxBinding[dateArray[j]]) {
-                    maxBinding[dateArray[j]] = {};
-                }
-                maxBinding[dateArray[j]][name[0]] = {
-                    value : val1
-                };
-
-                if (dateArray[index]) {
-                    maxBinding[dateArray[j]][name[0]].date = dateArray[index];
-                }
-            }
-            if (!maxBinding[date[0]]) {
-                maxBinding[date[0]] = {};
-            }
-            maxBinding[date[0]][name[0]] = {
-                value : val1
-            };
-            if (dateArray[index]) {
-                maxBinding[date[0]][name[0]].date = dateArray[index];
-            }
-        }
-        return len ? ret : (arr.hasNulls ? null : UNDEFINED);
-    }
-
-    private buildOptions(points : any) : Object {
+    private buildSeries(points : any) : any {
         return {
             series: [{
                 id:"toto",
                 dataGrouping: {
                     enabled : true,
                     units: [['week', [1]], ['month',[1]]],
-                    approximation:'high',
-                    // approximation: this.approximationMinMax,
-                    /*approximation: function (arr, dateArray, date, name) {
-                    console.log(arr, dateArray, date, name);
-                    console.log(this);
-                    console.log(
-                        'dataGroupInfo:',
-                        this.dataGroupInfo,
-                        'Raw data:',
-                        this.options.data.slice(this.dataGroupInfo.start, this.dataGroupInfo.start + this.dataGroupInfo.length)
-                    );
-                    return this.dataGroupInfo.length;
-                }*/
-                    /*approximation: function (arr, dateArray, date, name) {
-
-                        var ret = null;
-                        var maxBinding = {};
-                        var len = arr.length;
-                        if (len) {
-                            var max = -Number.MAX_VALUE;
-                            var min = Number.MAX_VALUE;
-                            var index = 0;
-                            for ( var i = 0; i < arr.length; i++) {
-                                if (arr[i] > max) {
-                                    max = arr[i];
-                                    index = i;
-                                }
-                                if (arr[i] < min) {
-                                    min = arr[i];
-                                }
-                            }
-                            var val1 = max;
-                            var UNDEFINED;
-                            // Si c'est une PS il ne faut pas appliquer le min / max :
-                            // Highstock ne le supporte pas.
-                            // var groupthem = (max > min) && name[0].indexOf("_PS_") == -1 ? true : false;
-                            var groupthem = (max > min) ? true : false;
-                            ret = [val1, min, groupthem];
-
-                            if (!maxBinding[name[0]]) {
-                                maxBinding[name[0]] = {};
-                            }
-                            for ( var j = 0; j < dateArray.length; j++) {
-                                if (!maxBinding[dateArray[j]]) {
-                                    maxBinding[dateArray[j]] = {};
-                                }
-                                maxBinding[dateArray[j]][name[0]] = {
-                                    value : val1
-                                };
-
-                                if (dateArray[index]) {
-                                    maxBinding[dateArray[j]][name[0]].date = dateArray[index];
-                                }
-                            }
-                            if (!maxBinding[date[0]]) {
-                                maxBinding[date[0]] = {};
-                            }
-                            maxBinding[date[0]][name[0]] = {
-                                value : val1
-                            };
-                            if (dateArray[index]) {
-                                maxBinding[date[0]][name[0]].date = dateArray[index];
-                            }
-                        }
-                        return len ? ret : (arr.hasNulls ? null : UNDEFINED);
-                    },*/
-                    // forced: true
+                    approximation:'high'
                 },
                 data: points
-            }],
-            "chart" : {
-                alignThresholds : true,
-                "zoomType" : "x",
-                "xAxis" : {
-                    "tickInterval" : 1000 * 60 * 10,
-                    "type" : "datetime"
-                },
-                "type" : "line"
-            },
-            "legend" : {
-                enabled : true
-            },
-            navigator : {
-                margin : 30
-            },
-            exporting : {
-                sourceWidth : 800,
-                type : 'image/jpeg',
-                sourceHeight : 800,
-                enabled : true,
-                buttons : {
-                    contextButton : {
-                        enabled : false
-                    }
-                }
-            },
-            loading : {
-                hideDuration : 100,
-                showDuration : 100,
-            },
-            //tooltip : {formatter : tooltipService.tooltipFormatter },
-            xAxis : [{
-                endOnTick : true,
-                startOnTick : true,
-                ordinal: false
-            }, {
-                id : 'columnAxis',
-                linkedTo : 0,
-                labels : {
-                    enabled : false
-                }
-            }, {
-                id : 'monotoneAxis',
-                linkedTo : 0,
-                offset : 0,
-                labels : {
-                    enabled : false
-                }
-            }],
-            "rangeSelector" : {
-                "enabled" : false
-            },
-            "credits" : {
-                "enabled" : false
-            }
+            }]
         };
+    };
+
+    private buildOptions(points : any) : Object {
+        let plotOptions : any = Object.assign(this.buildSeries(points), PLOT_OPTIONS);
+        return Object.assign(plotOptions.navigator, this.buildSeries(points));
     }
 
     public etendCourbe(valeurDuree: number, typeDuree : string) : void {
         this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.courbe).subscribe(courbe => {
             this.courbe = courbe;
-            this.options = {
-                xAxis: OPTIONS_XAXIS,
-                series: [{
-                    data: courbe.points
-                }]
-            };
+            this.options= this.buildOptions(courbe.points);
         });
     }
 

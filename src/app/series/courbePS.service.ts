@@ -9,6 +9,16 @@ import * as moment from 'moment';
 export class CourbePSService {
     constructor(private http: Http) {}
 
+    getCourbe(courbe: Courbe) : Observable<Courbe> {
+        let params = new URLSearchParams();
+        params.set('dateDebut', moment(courbe.dateDebut).format("DD/MM/YYYY HH:mm:ss"));
+        params.set('dateFin', moment(courbe.dateFin).format("DD/MM/YYYY HH:mm:ss"));
+        return this.http.get('http://localhost:8080/points_sample', {search: params}).map(function(res: Response) {
+            courbe.points = res.json();
+            return courbe;
+        }).catch(this.handleError);
+    }
+
     getCourbePS(courbe: Courbe) : Observable<Courbe> {
         let params = new URLSearchParams();
         params.set('dateDebut', moment(courbe.dateDebut).format("DD/MM/YYYY HH:mm:ss"));
