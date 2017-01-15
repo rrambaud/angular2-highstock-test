@@ -49,9 +49,6 @@ export const PLOT_OPTIONS: Object = {
         zoomType : "x",
         type : "line"
     },
-    legend : {
-        enabled : true
-    },
     navigator : {
         margin : 30,
     },
@@ -92,26 +89,29 @@ export class SeriesComponent {
             type:'PS',
             label:'custom_PS',
             dateDebut: moment(date).startOf('month').toDate(),
-            dateFin: moment(date).startOf('month').add({years:1}).subtract({seconds:1}).toDate(),
+            dateFin: moment(date).startOf('month').add({months:1}).subtract({seconds:1}).toDate(),
             ps:new Map<string, number>().set('PTE', 100).set('HPH', 120).set('HCH', 140).set('HPE', 160).set('HCE', 100),
             points: undefined,
-            link: 'http://localhost:8080/points_ps'
+            link: 'http://localhost:8080/points_ps',
+            visible: true
         });
 
-        this.listeCourbe.push( {
+        this.listeCourbe.push({
             type:'EA',
             label:'cosinus_EA',
             dateDebut: moment(date).startOf('month').toDate(),
-            dateFin: moment(date).startOf('month').add({years:1}).subtract({seconds:1}).toDate(),
+            dateFin: moment(date).startOf('month').add({months:1}).subtract({seconds:1}).toDate(),
             ps: undefined,
             points: undefined,
-            link: 'http://localhost:8080/points_sample'
+            link: 'http://localhost:8080/points_sample',
+            visible: true
         });
 
         let arrayObservable : Array<Observable<any>> = [];
         for (let courbe of this.listeCourbe) {
             arrayObservable.push(courbePSService.getCourbe(courbe));
         }
+
         Observable.forkJoin(arrayObservable).subscribe(
             listeCourbe => {
                 this.options= this.buildOptions(listeCourbe);
@@ -125,14 +125,14 @@ export class SeriesComponent {
         this.chart = chartInstance;
     }
 
-    toto(input: string) : void {
-            console.log('changed ', input);
-            let serieId : string = 'toto';
-            let serie : any = this.chart.get(serieId);
-            serie.setVisible(!this.afficherCourbe);
-            this.afficherCourbe = !this.afficherCourbe;
+    changeVisibility(courbe: Courbe) : void {
+            let serie : any = this.chart.get(courbe.label);
+            let visible : boolean = !serie.visible;
+            serie.setVisible(visible);
+            courbe.visible = visible;
     };
 
+    //je sais pas trop ce qu'il fout ce code, il semble fonctionner et vient de Sycomore v1
     private approximationMinMax(arr, dateArray, date, name) {
         var ret = null;
         var maxBinding = {};
@@ -212,10 +212,17 @@ export class SeriesComponent {
     }
 
     public etendCourbe(valeurDuree: number, typeDuree : string) : void {
-        this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.listeCourbe[1]).subscribe(courbe => {
-            let listeCourbe : Array<Courbe> = [];
-            listeCourbe.push(courbe);
-            this.options= this.buildOptions(listeCourbe);
+        let arrayObservable : Array<Observable<any>> = [];
+        for (let courbe of this.listeCourbe) {
+            arrayObservable.push(this.courbePSService.etendCourbePS(valeurDuree, typeDuree, courbe));
+        }
+
+        Observable.forkJoin(arrayObservable).subscribe(
+            listeCourbe => {
+                this.options= this.buildOptions(listeCourbe);
+            },
+            err=> {
+                this.errorCount++;console.log(this.errorCount);
         });
     }
 

@@ -8,4 +8,8 @@
 <div *ngIf="errorCount > 0">
   {{errorCount}} errors detected
 </div>
-<label><input type="checkbox" [ngModel]="afficherCourbe" (change)="toto(afficherCourbe)">Afficher courbe</label>
+<ul>
+    <li *ngFor="let courbe of listeCourbe">
+        <label><input type="checkbox" [ngModel]="courbe.visible" (change)="changeVisibility(courbe)">{{courbe.label}}</label>
+    </li>
+</ul>

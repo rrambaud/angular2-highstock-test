@@ -51,7 +51,8 @@ export class HomeComponent {
             dateFin: moment(date).startOf('month').add({months:1}).subtract({seconds:1}).toDate(),
             ps:new Map<string, number>().set('PTE', 100).set('HPH', 120).set('HCH', 140).set('HPE', 160).set('HCE', 100),
             points: undefined,
-            link: 'http://localhost:8080/points_ps'
+            link: 'http://localhost:8080/points_ps',
+            visible: true
         };
 
         courbePSService.getCourbe(this.courbe).subscribe(points => {

@@ -7,4 +7,5 @@ export class Courbe {
     ps:Map<string, number>;
     points: Array<Array<any>>;
     link: string;
+    visible: boolean;
 }

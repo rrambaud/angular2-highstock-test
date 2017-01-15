@@ -26,7 +26,7 @@ export class CourbePSService {
             .catch(this.handleError);
     }
 
-    //TODO merger en un seul stream avec le get courbe
+    //TODO merger en un seul stream avec le get courbe ?
     etendCourbePS(valeurDuree: number, typeDuree : any, courbe: Courbe) : Observable<Courbe> {
         if (!(typeDuree === 'years' || typeDuree === 'months')) {
             throw new Error("type duree fausse " + typeDuree);
@@ -47,11 +47,14 @@ export class CourbePSService {
         let params = new URLSearchParams();
         params.set('dateDebut', moment(dateDebut).format("DD/MM/YYYY HH:mm:ss"));
         params.set('dateFin', moment(dateFin).format("DD/MM/YYYY HH:mm:ss"));
-        courbe.ps.forEach((puissance: number, classeTemporelle: string) => {
-            params.set(classeTemporelle, String(puissance));
-        });
-        return this.http.get('http://localhost:8080/points_ps', {search: params}).map(function(res: Response) {
-            console.log(res)
+
+        if (courbe.ps) {
+            courbe.ps.forEach((puissance: number, classeTemporelle: string) => {
+                params.set(classeTemporelle, String(puissance));
+            });
+        }
+
+        return this.http.get(courbe.link, {search: params}).map(res => {
             let points = res.json();
             if (valeurDuree > 0) {
                 courbe.points = courbe.points.concat(points);
