@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams, Response } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
-import {Courbe} from './courbe';
+import { Courbe } from './courbe';
 
 import * as moment from 'moment';
 
@@ -13,25 +13,20 @@ export class CourbePSService {
         let params = new URLSearchParams();
         params.set('dateDebut', moment(courbe.dateDebut).format("DD/MM/YYYY HH:mm:ss"));
         params.set('dateFin', moment(courbe.dateFin).format("DD/MM/YYYY HH:mm:ss"));
-        return this.http.get('http://localhost:8080/points_sample', {search: params}).map(function(res: Response) {
-            courbe.points = res.json();
-            return courbe;
-        }).catch(this.handleError);
+        if (courbe.ps) {
+            courbe.ps.forEach((puissance: number, classeTemporelle: string) => {
+                params.set(classeTemporelle, String(puissance));
+            });
+        }
+        return this.http.get(courbe.link, {search: params})
+            .map(res => {
+                courbe.points = res.json();
+                return courbe;
+            })
+            .catch(this.handleError);
     }
 
-    getCourbePS(courbe: Courbe) : Observable<Courbe> {
-        let params = new URLSearchParams();
-        params.set('dateDebut', moment(courbe.dateDebut).format("DD/MM/YYYY HH:mm:ss"));
-        params.set('dateFin', moment(courbe.dateFin).format("DD/MM/YYYY HH:mm:ss"));
-        courbe.ps.forEach((puissance: number, classeTemporelle: string) => {
-            params.set(classeTemporelle, String(puissance));
-        });
-        return this.http.get('http://localhost:8080/points_ps', {search: params}).map(function(res: Response) {
-            courbe.points = res.json();
-            return courbe;
-        }).catch(this.handleError);
-    }
-
+    //TODO merger en un seul stream avec le get courbe
     etendCourbePS(valeurDuree: number, typeDuree : any, courbe: Courbe) : Observable<Courbe> {
         if (!(typeDuree === 'years' || typeDuree === 'months')) {
             throw new Error("type duree fausse " + typeDuree);

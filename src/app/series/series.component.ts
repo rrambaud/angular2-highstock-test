@@ -6,6 +6,8 @@ import * as Highcharts from 'highcharts';
 
 import * as moment from 'moment';
 
+import { Observable } from 'rxjs/Rx';
+
 Highcharts.setOptions({
   colors: ['#058DC7', '#50B432', '#ED561B']
 });
@@ -78,26 +80,45 @@ export const PLOT_OPTIONS: Object = {
 })
 export class SeriesComponent {
     options: Object;
-    courbe: Courbe;
+    listeCourbe: Array<Courbe>;
     chart : any;
     errorCount : number = 0;
     afficherCourbe: boolean = true;
 
     constructor(private courbePSService: CourbePSService) {
         let date = new Date();
-
-        this.courbe = {
+        this.listeCourbe = [];
+        this.listeCourbe.push({
+            type:'PS',
+            label:'custom_PS',
             dateDebut: moment(date).startOf('month').toDate(),
             dateFin: moment(date).startOf('month').add({years:1}).subtract({seconds:1}).toDate(),
             ps:new Map<string, number>().set('PTE', 100).set('HPH', 120).set('HCH', 140).set('HPE', 160).set('HCE', 100),
-            points: undefined
-        };
+            points: undefined,
+            link: 'http://localhost:8080/points_ps'
+        });
 
-        courbePSService.getCourbe(this.courbe).subscribe(courbe => {
-            this.courbe = courbe;
-            this.options= this.buildOptions(courbe.points);
-        },
-        err=> {this.errorCount++;console.log(this.errorCount);});
+        this.listeCourbe.push( {
+            type:'EA',
+            label:'cosinus_EA',
+            dateDebut: moment(date).startOf('month').toDate(),
+            dateFin: moment(date).startOf('month').add({years:1}).subtract({seconds:1}).toDate(),
+            ps: undefined,
+            points: undefined,
+            link: 'http://localhost:8080/points_sample'
+        });
+
+        let arrayObservable : Array<Observable<any>> = [];
+        for (let courbe of this.listeCourbe) {
+            arrayObservable.push(courbePSService.getCourbe(courbe));
+        }
+        Observable.forkJoin(arrayObservable).subscribe(
+            listeCourbe => {
+                this.options= this.buildOptions(listeCourbe);
+            },
+            err=> {
+                this.errorCount++;console.log(this.errorCount);
+        });
     }
 
     saveInstance(chartInstance) {
@@ -112,29 +133,89 @@ export class SeriesComponent {
             this.afficherCourbe = !this.afficherCourbe;
     };
 
-    private buildSeries(points : any) : any {
-        return {
-            series: [{
-                id:"toto",
+    private approximationMinMax(arr, dateArray, date, name) {
+        var ret = null;
+        var maxBinding = {};
+        var len = arr.length;
+        if (len) {
+            var max = -Number.MAX_VALUE;
+            var min = Number.MAX_VALUE;
+            var index = 0;
+            for ( var i = 0; i < arr.length; i++) {
+                if (arr[i] > max) {
+                    max = arr[i];
+                    index = i;
+                }
+                if (arr[i] < min) {
+                    min = arr[i];
+                }
+            }
+            var val1 = max;
+            var UNDEFINED;
+            // Si c'est une PS il ne faut pas appliquer le min / max :
+            // Highstock ne le supporte pas.
+            var groupthem = (max > min) && name.indexOf("_PS_") == -1 ? true : false;
+            // var groupthem = (max > min) && name[0].indexOf("_PS_") == -1 ? true : false;
+            ret = [val1, min, groupthem];
+
+            if (!maxBinding[name[0]]) {
+                maxBinding[name[0]] = {};
+            }
+            for ( var j = 0; j < dateArray.length; j++) {
+                if (!maxBinding[dateArray[j]]) {
+                    maxBinding[dateArray[j]] = {};
+                }
+                maxBinding[dateArray[j]][name[0]] = {
+                    value : val1
+                };
+
+                if (dateArray[index]) {
+                    maxBinding[dateArray[j]][name[0]].date = dateArray[index];
+                }
+            }
+            if (!maxBinding[date[0]]) {
+                maxBinding[date[0]] = {};
+            }
+            maxBinding[date[0]][name[0]] = {
+                value : val1
+            };
+            if (dateArray[index]) {
+                maxBinding[date[0]][name[0]].date = dateArray[index];
+            }
+        }
+        return len ? ret : (arr.hasNulls ? null : UNDEFINED);
+    };
+
+    private buildSeries(listeCourbe : Array<Courbe>) : any {
+        let seriesOption : any = {
+            series: []
+        };
+        for (let courbe of listeCourbe) {
+            seriesOption.series.push({
+                id: courbe.label,
+                name: courbe.label,
                 dataGrouping: {
                     enabled : true,
                     units: [['week', [1]], ['month',[1]]],
-                    approximation:'high'
+                    approximation: this.approximationMinMax//'high'
                 },
-                data: points
-            }]
-        };
+                data: courbe.points
+            });
+        }
+        return seriesOption;
     };
 
-    private buildOptions(points : any) : Object {
-        let plotOptions : any = Object.assign(this.buildSeries(points), PLOT_OPTIONS);
-        return Object.assign(plotOptions.navigator, this.buildSeries(points));
+    private buildOptions(listeCourbe : Array<Courbe>) : Object {
+        let plotOptions : any = Object.assign(this.buildSeries(listeCourbe), PLOT_OPTIONS);
+        Object.assign(plotOptions.navigator, this.buildSeries(listeCourbe));
+        return plotOptions;
     }
 
     public etendCourbe(valeurDuree: number, typeDuree : string) : void {
-        this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.courbe).subscribe(courbe => {
-            this.courbe = courbe;
-            this.options= this.buildOptions(courbe.points);
+        this.courbePSService.etendCourbePS(valeurDuree, typeDuree, this.listeCourbe[1]).subscribe(courbe => {
+            let listeCourbe : Array<Courbe> = [];
+            listeCourbe.push(courbe);
+            this.options= this.buildOptions(listeCourbe);
         });
     }
 

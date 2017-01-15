@@ -45,18 +45,20 @@ export class HomeComponent {
         let date = new Date();
 
         this.courbe = {
+            type:'PS',
+            label:'custom_PS',
             dateDebut: moment(date).startOf('month').toDate(),
             dateFin: moment(date).startOf('month').add({months:1}).subtract({seconds:1}).toDate(),
             ps:new Map<string, number>().set('PTE', 100).set('HPH', 120).set('HCH', 140).set('HPE', 160).set('HCE', 100),
-            points: undefined
+            points: undefined,
+            link: 'http://localhost:8080/points_ps'
         };
 
-        courbePSService.getCourbePS(this.courbe).subscribe(courbe => {
-            this.courbe = courbe;
+        courbePSService.getCourbe(this.courbe).subscribe(points => {
             this.options = {
                 xAxis: OPTIONS_XAXIS,
                 series: [{
-                    data: courbe.points
+                    data: points
                 }]
             };
         },
