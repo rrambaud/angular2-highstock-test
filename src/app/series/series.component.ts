@@ -74,7 +74,7 @@ export class SeriesComponent {
 
         this.courbe = {
             dateDebut: moment(date).startOf('month').toDate(),
-            dateFin: moment(date).startOf('month').add({months:1}).subtract({seconds:1}).toDate(),
+            dateFin: moment(date).startOf('month').add({years:1}).subtract({seconds:1}).toDate(),
             ps:new Map<string, number>().set('PTE', 100).set('HPH', 120).set('HCH', 140).set('HPE', 160).set('HCE', 100),
             points: undefined
         };
@@ -98,57 +98,137 @@ export class SeriesComponent {
             this.afficherCourbe = !this.afficherCourbe;
     };
 
+    private approximationMinMax(arr, dateArray, date, name) {
+        var ret = null;
+        var maxBinding = {};
+        var len = arr.length;
+        if (len) {
+            var max = -Number.MAX_VALUE;
+            var min = Number.MAX_VALUE;
+            var index = 0;
+            for ( var i = 0; i < arr.length; i++) {
+                if (arr[i] > max) {
+                    max = arr[i];
+                    index = i;
+                }
+                if (arr[i] < min) {
+                    min = arr[i];
+                }
+            }
+            var val1 = max;
+            var UNDEFINED;
+            // Si c'est une PS il ne faut pas appliquer le min / max :
+            // Highstock ne le supporte pas.
+            var groupthem = (max > min) && name[0].indexOf("_PS_") == -1 ? true : false;
+            ret = [val1, min, groupthem];
+
+            if (!maxBinding[name[0]]) {
+                maxBinding[name[0]] = {};
+            }
+            for ( var j = 0; j < dateArray.length; j++) {
+                if (!maxBinding[dateArray[j]]) {
+                    maxBinding[dateArray[j]] = {};
+                }
+                maxBinding[dateArray[j]][name[0]] = {
+                    value : val1
+                };
+
+                if (dateArray[index]) {
+                    maxBinding[dateArray[j]][name[0]].date = dateArray[index];
+                }
+            }
+            if (!maxBinding[date[0]]) {
+                maxBinding[date[0]] = {};
+            }
+            maxBinding[date[0]][name[0]] = {
+                value : val1
+            };
+            if (dateArray[index]) {
+                maxBinding[date[0]][name[0]].date = dateArray[index];
+            }
+        }
+        return len ? ret : (arr.hasNulls ? null : UNDEFINED);
+    }
+
     private buildOptions(points : any) : Object {
         return {
             series: [{
                 id:"toto",
+                dataGrouping: {
+                    enabled : true,
+                    units: [['week', [1]], ['month',[1]]],
+                    approximation:'high',
+                    // approximation: this.approximationMinMax,
+                    /*approximation: function (arr, dateArray, date, name) {
+                    console.log(arr, dateArray, date, name);
+                    console.log(this);
+                    console.log(
+                        'dataGroupInfo:',
+                        this.dataGroupInfo,
+                        'Raw data:',
+                        this.options.data.slice(this.dataGroupInfo.start, this.dataGroupInfo.start + this.dataGroupInfo.length)
+                    );
+                    return this.dataGroupInfo.length;
+                }*/
+                    /*approximation: function (arr, dateArray, date, name) {
+
+                        var ret = null;
+                        var maxBinding = {};
+                        var len = arr.length;
+                        if (len) {
+                            var max = -Number.MAX_VALUE;
+                            var min = Number.MAX_VALUE;
+                            var index = 0;
+                            for ( var i = 0; i < arr.length; i++) {
+                                if (arr[i] > max) {
+                                    max = arr[i];
+                                    index = i;
+                                }
+                                if (arr[i] < min) {
+                                    min = arr[i];
+                                }
+                            }
+                            var val1 = max;
+                            var UNDEFINED;
+                            // Si c'est une PS il ne faut pas appliquer le min / max :
+                            // Highstock ne le supporte pas.
+                            // var groupthem = (max > min) && name[0].indexOf("_PS_") == -1 ? true : false;
+                            var groupthem = (max > min) ? true : false;
+                            ret = [val1, min, groupthem];
+
+                            if (!maxBinding[name[0]]) {
+                                maxBinding[name[0]] = {};
+                            }
+                            for ( var j = 0; j < dateArray.length; j++) {
+                                if (!maxBinding[dateArray[j]]) {
+                                    maxBinding[dateArray[j]] = {};
+                                }
+                                maxBinding[dateArray[j]][name[0]] = {
+                                    value : val1
+                                };
+
+                                if (dateArray[index]) {
+                                    maxBinding[dateArray[j]][name[0]].date = dateArray[index];
+                                }
+                            }
+                            if (!maxBinding[date[0]]) {
+                                maxBinding[date[0]] = {};
+                            }
+                            maxBinding[date[0]][name[0]] = {
+                                value : val1
+                            };
+                            if (dateArray[index]) {
+                                maxBinding[date[0]][name[0]].date = dateArray[index];
+                            }
+                        }
+                        return len ? ret : (arr.hasNulls ? null : UNDEFINED);
+                    },*/
+                    // forced: true
+                },
                 data: points
             }],
             "chart" : {
                 alignThresholds : true,
-                /*"events" : {
-                    selection : function(event) {
-                        if (selectionCallbacks) {
-                            self.handleArrayOrObject(selectionCallbacks, function(selectionCallback) {
-                                selectionCallback(event);
-                            });
-                            return true;
-                        }
-                    },
-                    click : function(event) {
-                        if (clickCallbacks) {
-                            self.handleArrayOrObject(clickCallbacks, function(clickCallback) {
-                                clickCallback(event);
-                            });
-                            return true;
-                        }
-
-                    },
-                    addSeries : function(event) {
-                        this.hideLoading();
-                        if (addSerieCallbacks) {
-                            self.handleArrayOrObject(addSerieCallbacks, function(addSerieCallback) {
-                                addSerieCallback(event);
-                            });
-                        }
-                    },
-                    redraw : function(event) {
-                        if (redrawCallbacks) {
-                            self.handleArrayOrObject(redrawCallbacks, function(redrawCallback) {
-                                redrawCallback(event);
-                            });
-                            return true;
-                        }
-                    },
-                    load : function(event) {
-                        if (loadCallbacks) {
-                            self.handleArrayOrObject(loadCallbacks, function(loadCallback) {
-                                loadCallback(event);
-                            });
-                        }
-                    }
-
-                },*/
                 "zoomType" : "x",
                 "xAxis" : {
                     "tickInterval" : 1000 * 60 * 10,
@@ -181,16 +261,7 @@ export class SeriesComponent {
             xAxis : [{
                 endOnTick : true,
                 startOnTick : true,
-                ordinal: false,
-                /*events : {
-                    afterSetExtremes : function(event) {
-                        if (navigatorCallbacks) {
-                            self.handleArrayOrObject(navigatorCallbacks, function(navigatorCallback) {
-                                navigatorCallback(event);
-                            });
-                        }
-                    }
-                }*/
+                ordinal: false
             }, {
                 id : 'columnAxis',
                 linkedTo : 0,
@@ -204,112 +275,7 @@ export class SeriesComponent {
                 labels : {
                     enabled : false
                 }
-            }],/*
-            yAxis : [
-                    {
-                        id : 'KWH',
-                        labels : {
-                            align : 'right',
-                            formatter : function(arg) {
-                                return this.value / 1000;
-                            },
-                            style : {
-                                color : '#4572A7'
-                            }
-                        },
-                        title : {
-                            text : 'KWH',
-                            style : {
-                                color : '#4572A7'
-                            }
-                        },
-                        minPadding : 0.2,
-                        maxPadding : 0.2,
-                        showEmpty : false,
-                        minTickInterval : 1000
-                    },
-                    {
-                        id : 'C',
-                        labels : {
-                            align : 'left',
-                            formatter : function() {
-                                return this.value;
-                            },
-                            style : {
-                                color : '#89A54E'
-                            }
-                        },
-                        title : {
-                            text : 'C',
-                            style : {
-                                color : '#89A54E'
-                            }
-                        },
-                        minPadding : 0.2,
-                        maxPadding : 0.2,
-                        opposite : true,
-                        showEmpty : false
-                    },
-                    {
-                        id : 'KVAH',
-                        labels : {
-                            align : 'left',
-                            formatter : function(arg) {
-                                var axisKVAH = this.chart.get('KVAH');
-                                var dataMinKVAH = axisKVAH.getExtremes().dataMin;
-                                var dataMaxKVAH = axisKVAH.getExtremes().dataMax;
-                                if (((dataMinKVAH < 10000 && dataMinKVAH > -10000) || (dataMaxKVAH > -10000 && dataMaxKVAH < 10000))
-                                        && dataMinKVAH !== 0) {
-                                    return this.value;
-                                } else {
-                                    return this.value / 1000;
-                                }
-                            },
-                            style : {
-                                color : '#89A54E'
-                            }
-                        },
-                        title : {
-                            text : 'ER',
-                            style : {
-                                color : '#89A54E'
-                            }
-                        },
-                        minPadding : 0.2,
-                        maxPadding : 0.2,
-                        opposite : true,
-                        showEmpty : false,
-                        minTickInterval : 1000
-                    }, {
-                        id : 'KWH',
-                        labels : {
-                            align : 'left',
-                            formatter : function() {
-                                return this.value;
-                            },
-                            style : {
-                                color : '#910000'
-                            }
-                        },
-                        title : {
-                            text : 'Puissance',
-                            style : {
-                                color : '#910000'
-                            }
-                        },
-                        minPadding : 0.2,
-                        maxPadding : 0.2,
-                        opposite : true,
-                        showEmpty : false
-                    }, {
-                        id : 'EMPTY_AXIS',
-                        labels : {
-                            enabled : false
-                        },
-                        title : {
-                            text : null
-                        },
-                    }],*/
+            }],
             "rangeSelector" : {
                 "enabled" : false
             },

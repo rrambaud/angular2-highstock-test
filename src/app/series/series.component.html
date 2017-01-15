@@ -4,7 +4,7 @@
 <button (click)="etendCourbe(-1, 'months')">M-1</button>
 <button (click)="etendCourbe(1, 'months')">M+1</button>
 <button (click)="etendCourbe(1, 'years')">A+1</button>
-<chart type="StockChart" [options]="options" (load)="saveInstance($event.context)"></chart>
+<chart type="StockChart" [options]="options" (load)="saveInstance($event.context)" style="width:100%"></chart>
 <div *ngIf="errorCount > 0">
   {{errorCount}} errors detected
 </div>
